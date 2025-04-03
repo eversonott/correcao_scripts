@@ -2,13 +2,11 @@
 name = "correcao-scripts"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Everson Otoni",email = "everson.ott@gmail.com"}
-]
-requires-python = ">=3.13"
+authors = ["Everson Otoni <everson.ott@gmail.com>"]
+readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.13"
+python = ">=3.11"
 flask = ">=3.1.0,<4.0.0"
 
 [tool.poetry.group.dev.dependencies]
