@@ -3,22 +3,29 @@ import subprocess
 import os
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # Limite de 1MB
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     resultado = None
     codigo_enviado = ''
+    saida = ""
 
     if request.method == 'POST':
-        codigo_enviado = request.form['codigo']
+        # Se o aluno enviou um arquivo .py, usamos ele
+        if 'arquivo' in request.files:
+            arquivo = request.files['arquivo']
+            if arquivo and arquivo.filename.endswith('.py'):
+                codigo_enviado = arquivo.read().decode('utf-8')
 
-        # Salva o código enviado como main.py temporário
+        # Caso contrário, usamos o conteúdo do textarea
+        if not codigo_enviado:
+            codigo_enviado = request.form['codigo']
+
+        # Salva o código como main.py
         with open("main.py", "w") as f:
             f.write(codigo_enviado)
 
-        saida = ''
-
-        # Executa os testes com pytest
         try:
             resultado = subprocess.run(
                 ["pytest", "test_main.py", "--quiet"],
@@ -26,15 +33,15 @@ def index():
                 stderr=subprocess.DEVNULL,
                 timeout=5
             )
-            # Simplificação para alunos
-            if resultado.returncode == 0:
-                saida = "✅ Todos os testes passaram com sucesso!\n\n" + saida
-            else:
-                saida = "❌ Alguns testes falharam. Revise seu código e tente novamente.\n\n" + saida
-        except Exception as e:
-            saida = f"Erro ao executar os testes: {e}"
 
-        # Remove o arquivo main.py após os testes
+            if resultado.returncode == 0:
+                saida = "✅ Todos os testes passaram com sucesso!"
+            else:
+                saida = "❌ Alguns testes falharam. Revise seu código e tente novamente."
+
+        except Exception as e:
+            saida = f"❌ Erro ao executar os testes: {e}"
+
         os.remove("main.py")
 
         return render_template("index.html", resultado=saida, codigo=codigo_enviado)

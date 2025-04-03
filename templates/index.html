@@ -15,8 +15,11 @@
   <h1>🧪 Teste seu código</h1>
   <p>Implemente a função <code>soma(a, b)</code> abaixo e clique em <strong>Enviar</strong>.</p>
 
-  <form method="post">
-    <textarea name="codigo" required placeholder="def soma(a, b):&#10;    return a + b">{{ codigo }}</textarea>
+  <form method="post" enctype="multipart/form-data">
+    <textarea name="codigo" placeholder="def soma(a, b):&#10;    return a + b">{{ codigo }}</textarea>
+    <p>Ou envie um arquivo <code>.py</code> com seu código:</p>
+    <input type="file" name="arquivo" accept=".py">
+
     <br><br>
     <button type="submit">Enviar</button>
   </form>
