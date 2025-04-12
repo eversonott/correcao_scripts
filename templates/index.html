@@ -8,6 +8,12 @@
     textarea { width: 100%; height: 200px; font-family: monospace; font-size: 14px; }
     pre { background: #f4f4f4; padding: 1em; white-space: pre-wrap; }
     .resultado { margin-top: 30px; }
+    .enunciado {
+      background-color: #eef6ff;
+      border-left: 5px solid #0077cc;
+      padding: 1em;
+      margin-top: 1em;
+    }
     select, input[type="file"], button {
       padding: 10px; margin: 10px 0; font-size: 16px;
     }
@@ -18,19 +24,34 @@
   <h1>🧪 Corretor Automático de Exercícios</h1>
 
   <form method="post" enctype="multipart/form-data">
-    <label for="aula"><strong>Escolha a aula:</strong></label><br>
-    <select name="aula" id="aula" required onchange="carregarExercicios()">
-      <option value="">Selecione a aula</option>
-      {% for nome_aula in exercicios %}
-        <option value="{{ nome_aula }}" {% if nome_aula == aula %}selected{% endif %}>{{ nome_aula|capitalize }}</option>
-      {% endfor %}
+   
+    <!-- 1. TIPO -->
+    <label for="tipo"><strong>Tipo de exercício:</strong></label><br>
+    <select name="tipo" id="tipo" required onchange="this.form.submit()">
+      <option value="">Selecione o tipo</option>
+      <option value="em_aula" {% if tipo == 'em_aula' %}selected{% endif %}>Em aula</option>
+      <option value="para_casa" {% if tipo == 'para_casa' %}selected{% endif %}>Para casa</option>
     </select><br>
 
+    <!-- 2. AULA -->
+    <label for="aula"><strong>Escolha a aula:</strong></label><br>
+    <select name="aula" id="aula" required onchange="this.form.submit()">
+      <option value="">Selecione a aula</option>
+      {% if tipo in exercicios %}
+        {% for nome_aula in exercicios[tipo] %}
+          <option value="{{ nome_aula }}" {% if nome_aula == aula %}selected{% endif %}>
+            {{ nome_aula|capitalize }}
+          </option>
+        {% endfor %}
+      {% endif %}
+    </select><br>
+
+    <!-- 3. EXERCÍCIO -->
     <label for="exercicio"><strong>Escolha o exercício:</strong></label><br>
     <select name="exercicio" id="exercicio" required>
       <option value="">Selecione o exercício</option>
-      {% if aula in exercicios %}
-        {% for nome_exercicio in exercicios[aula] %}
+      {% if tipo in exercicios and aula in exercicios[tipo] %}
+        {% for nome_exercicio in exercicios[tipo][aula] %}
           <option value="{{ nome_exercicio }}" {% if nome_exercicio == exercicio %}selected{% endif %}>
             {{ nome_exercicio.replace('_', ' ').capitalize() }}
           </option>
@@ -38,8 +59,19 @@
       {% endif %}
     </select><br>
 
+
+    <div id="enunciado-container">
+      {% if enunciado_html %}
+        {{ enunciado_html|safe }}
+      {% endif %}
+    </div>
+
+
+    
+
     <label for="codigo"><strong>Cole seu código abaixo:</strong></label><br>
-    <textarea name="codigo" placeholder="def soma(a, b):&#10;    return a + b">{{ codigo }}</textarea><br>
+      <!--<textarea name="codigo" placeholder="def soma(a, b):&#10;    return a + b">{{ codigo }}</textarea><br>-->
+      <textarea name="codigo">{{ codigo }}</textarea><br>
 
     <label for="arquivo"><strong>Ou envie um arquivo .py:</strong></label><br>
     <input type="file" name="arquivo" accept=".py"><br>
@@ -50,7 +82,7 @@
   {% if resultado %}
     <div class="resultado">
       <h2>📋 Resultado:</h2>
-      <pre>{{ resultado }}</pre>
+      <pre><h3>{{ resultado }}</h3></pre>
     </div>
   {% endif %}
 
@@ -61,16 +93,38 @@
 
     // Ativa TAB dentro da textarea
     const textarea = document.querySelector("textarea");
-    textarea.addEventListener("keydown", function(e) {
-      if (e.key === "Tab") {
-        e.preventDefault();
-        const start = this.selectionStart;
-        const end = this.selectionEnd;
-        this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
-        this.selectionStart = this.selectionEnd = start + 4;
-      }
-    });
+    if (textarea) {
+      textarea.addEventListener("keydown", function(e) {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 4;
+        }
+      });
+    }
+
+    // Carrega enunciado ao mudar o exercício
+    const seletorExercicio = document.getElementById("exercicio");
+    if (seletorExercicio) {
+      seletorExercicio.addEventListener("change", function () {
+        const aula = document.getElementById("aula").value;
+        const exercicio = this.value;
+        if (aula && exercicio) {
+          const tipo = document.getElementById("tipo").value;
+          fetch(`/enunciado/${tipo}/${aula}/${exercicio}`)
+            .then(response => response.text())
+            .then(html => {
+              document.getElementById("enunciado-container").innerHTML = html;
+            });
+        } else {
+          document.getElementById("enunciado-container").innerHTML = "";
+        }
+      });
+    }
   </script>
+ 
 </body>
 </html>
 
