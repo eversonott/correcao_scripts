@@ -1,6 +1,7 @@
 {
   "build": {
-    "cmd": "poetry config virtualenvs.in-project true && poetry install --no-interaction --no-ansi"
+    "cmd": "pip install -r requirements.txt"
   },
-  "start": "poetry run python app.py"
+  "start": "python app.py"
 }
+
