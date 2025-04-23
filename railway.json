@@ -1,7 +1,6 @@
 {
-  "build": [
-    "poetry config virtualenvs.in-project true",
-    "poetry install --no-interaction --no-ansi"
-  ],
+  "build": {
+    "cmd": "poetry config virtualenvs.in-project true && poetry install --no-interaction --no-ansi"
+  },
   "start": "poetry run python app.py"
 }
