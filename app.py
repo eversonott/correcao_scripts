@@ -101,6 +101,6 @@ def enunciado(tipo, aula, exercicio):
     return carregar_enunciado(tipo, aula, exercicio)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
 
